@@ -35,6 +35,11 @@ final class MovieViewModel: ObservableObject {
 	private let networkManager = NetworkManager() // NetworkManager 인스턴스
 	private var cancellables = Set<AnyCancellable>()
 	
+	// random으로 선택된 최신 개봉작 영화
+	var randomNowPlayingMovie: Movie? {
+		return nowPlayingMovies.randomElement()
+	}
+	
 	// MARK: - Initializer
 	/// ViewModel 초기화 시 각 영화 데이터를 로드함
 	init() {
