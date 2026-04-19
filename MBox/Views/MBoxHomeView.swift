@@ -14,6 +14,7 @@ struct MBoxHomeView: View {
 	
 	// MARK: - Properties
 	@EnvironmentObject private var vm: MovieViewModel  // ViewModel객체
+	@State private var selectedMovie: Movie? = nil // 선택 영화 데이터
 	
 	// MARK: - Body
     var body: some View {
@@ -33,6 +34,9 @@ struct MBoxHomeView: View {
 									.padding(.bottom, 20)
 							}
 							
+							// 카테고리별 영화 리스트
+							categoryRows
+							
 						} //:VSTACK
 						.padding(.top, 10)
 					} //:SCROLL
@@ -40,6 +44,11 @@ struct MBoxHomeView: View {
 				
 			} //:ZSTACK
 			.foregroundStyle(.ccWhite)
+			.sheet(item: $selectedMovie) { movie in
+				// 영화 클릭시 상세보기 화면으로 이동
+				MovieDetailView(movie: movie)
+			}
+			
 		}//: NavigationStack
     }//:body
 	
@@ -81,12 +90,86 @@ struct MBoxHomeView: View {
 			imageName: movie.posterURL?.absoluteString ?? "", // 영화 포스터 URL
 			title: movie.title, // 영화 제목
 			onBackgroundPressed: { // 배경 클릭 시 상세보기로 이동
-				
+				selectedMovie = movie
 			},
 			onDetailPressed: { // 버튼 클릭 시 상세보기로 이동
-				
+				selectedMovie = movie
 			}
 		)
+	}
+	
+	/// 카테고리별 영화 리스트
+	private var categoryRows: some View {
+		LazyVStack(spacing: 15) {
+			// 현재 상영중 섹션
+			categoryRow(
+				title: "현재 상영 중",
+				movies: vm.nowPlayingMovies,
+				onScrolledAtEnd: {
+					vm.fetchNowPlayingMovies(page: vm.nextNowPlayingPage)
+				}
+			)
+			// 인기작 섹션
+			categoryRow(
+				title: "인기작",
+				movies: vm.popularMovies,
+				onScrolledAtEnd: {
+					vm.fetchPopularMovies(page: vm.nextpopularPage)
+				}
+			)
+			// 별점 순위 섹션
+			categoryRow(
+				title: "별점 순",
+				movies: vm.topRatedMovies,
+				onScrolledAtEnd: {
+					vm.fetchTopRatedMovies(page: vm.nextTopRatedPage)
+				}
+			)
+			// 곧 상영 예정 섹션
+			categoryRow(
+				title: "상영 예정작",
+				movies: vm.upComingMovies,
+				onScrolledAtEnd: {
+					vm.fetchUpComingMovies(page: vm.nextUpComingPage)
+				}
+			)
+			
+		} //:VSTACK
+	}
+	
+	/// 단일 카테고리의 영화 리스트
+	/// - parameter:
+	/// 	- title: 카테고리 제목
+	/// 	- movies: 해당 카테고리에 포함된 영화 리스트
+	/// 	- onScrolledAtEnd: 무한 스크롤 트리거
+	/// @escaping 클로져가 함수 실행이 끝난 후에도 호출될 수 있게 함
+	/// 여기서는 onScrolledAtEnd 클로져가 마지막 스크롤이 끝날 때 외부에서 호출될 수 있게 만듦
+	private func categoryRow(title: String, movies: [Movie], onScrolledAtEnd: @escaping () -> Void) -> some View {
+		VStack(alignment: .leading, spacing: 5) {
+			// 카테고리 제목
+			Text(title)
+				.font(.title)
+			// 가로 스크롤 영화 리스트
+			ScrollView(.horizontal, showsIndicators: false) {
+				LazyHStack(spacing: 15) {
+					ForEach(movies) { movie in
+						MBoxMovieCell(
+							imageName: movie.posterURL?.absoluteString ?? "",
+							title: movie.title
+						)
+						.onAppear {
+							// 무한 스크롤 트리거
+							if movie == movies.last {
+								onScrolledAtEnd()
+							}
+						}
+						.onTapGesture {
+							selectedMovie = movie
+						}
+					} //:LOOP
+				} //:HSTACK
+			} //:SCROLL
+		} //:VSTACK
 	}
 	
 }

@@ -31,7 +31,7 @@ struct MovieResponse: Codable {
 // MARK: - Movie
 /// TMBD API 의 개별 영화 데이터를 표현하는 모델
 /// API 응답에서 개별 영화 정보를 파싱하는데 사용됨
-struct Movie: Identifiable, Codable {
+struct Movie: Identifiable, Codable, Equatable {
 	
 	//properties
 	let id: Int  // 영화 고유 ID
@@ -70,6 +70,17 @@ struct Movie: Identifiable, Codable {
 		voteAverage: 8.863,
 		posterPath: "/72AoFPC5TY4DfJwXXS9rPwPeReD.jpg"
 	)
+	
+	// MARK: - Equatable 설정
+	/// 두 Movie 객체가 같은 ID 값을 비교해서 동일 여부 결정
+	/// Swift의 == 연산자를 사용자 정의하기 위해 사용함. ForEach 배열 데이터를 처리할 때 고유성 여부 확인시 사용
+	/// - parameter:
+	/// 	- lhs: 비교할 첫번째 Movie 객체
+	/// 	- rhs: 비교할 두번째 Movie 객체
+	/// - return: 두 객체의 id가 동일하면 true, 다르면 false
+	static func == (lhs: Movie, rhs: Movie) -> Bool {
+		return lhs.id == rhs.id
+	}
 }
 
 /*

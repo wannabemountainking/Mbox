@@ -104,6 +104,7 @@ final class MovieViewModel: ObservableObject {
 						movies: movies,
 						page: page
 					)
+					self.nextTopRatedPage += 1
 				}
 			)
 			.store(in: &cancellables)
@@ -121,6 +122,7 @@ final class MovieViewModel: ObservableObject {
 						movies: movies,
 						page: page
 					)
+					self.nextUpComingPage += 1
 				}
 			)
 			.store(in: &cancellables)
