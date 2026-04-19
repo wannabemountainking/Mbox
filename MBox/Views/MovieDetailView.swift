@@ -51,6 +51,10 @@ struct MovieDetailView: View {
 			
 		} //:ZSTACK
 		.foregroundStyle(.ccWhite)
+		.onAppear {
+			// My List에 현재 영화가 포함되어 있는지 확인
+			self.isInMyList = vm.isInMyList(movieID: movie.id)
+		}
 	}//:body
 	
 	
@@ -76,10 +80,13 @@ struct MovieDetailView: View {
 				MyListButton(inMyList: isInMyList) {
 					if isInMyList {
 						// My List 에 이미 있는 값이면 삭제 로직 추가 예정
+						guard let savedMovie = vm.myMovies.first(where: { $0.id == movie.id }) else {return}
+						vm.removeFromMyList(myMovie: savedMovie)
 						isInMyList = false
 						showPopupMessage("삭제되었습니다")
 					} else {
 						// My List 에 없는 값이면 새로 추가 로직 추가 예정
+						vm.addToMyList(movie: movie)
 						isInMyList = true
 						showPopupMessage("추가되었습니다")
 					}

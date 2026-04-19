@@ -21,6 +21,7 @@ final class MovieViewModel: ObservableObject {
 	@Published var popularMovies: [Movie] = [] // 인기 영화 목록
 	@Published var topRatedMovies: [Movie] = [] // 최고 평점 영화 목록
 	@Published var upComingMovies: [Movie] = [] // 개봉 예정 영화 목록
+	@Published var myMovies: [MyMovie] = [] // Core Data에서 로드된 My Movie 데이터
 	
 	// 에러 메시지
 	@Published var errorMessage: String? = nil // 에러 메시지 (에러 발생 시 표시)
@@ -33,7 +34,8 @@ final class MovieViewModel: ObservableObject {
 	
 	// 인스턴스 -> 싱글톤
 	private let networkManager = NetworkManager() // NetworkManager 인스턴스
-	private var cancellables = Set<AnyCancellable>()
+	private var cancellables = Set<AnyCancellable>() // Combine 구독 관리용
+	private var coreDataProvider = CoreDataProvider.shared // CoreDataProvider 인스턴스
 	
 	// random으로 선택된 최신 개봉작 영화
 	var randomNowPlayingMovie: Movie? {
@@ -47,6 +49,8 @@ final class MovieViewModel: ObservableObject {
 		fetchPopularMovies()
 		fetchTopRatedMovies()
 		fetchUpComingMovies()
+		
+		loadMyList()
 	}
 	
 	// MARK: - Fetch Methods
@@ -148,6 +152,30 @@ final class MovieViewModel: ObservableObject {
 		} else {
 			targetMovies.append(contentsOf: movies) // 그 이외의 경우 데이터를 기존 목록에 추가
 		}
+	}
+	
+	// MARK: - CoreData 관련 메서드
+	
+	/// CoreData에서 MyList 데이터를 로드
+	func loadMyList() {
+		myMovies = coreDataProvider.fetchMovies()
+	}
+	
+	/// Core Data에 MyList 데이터 추가
+	func addToMyList(movie: Movie) {
+		coreDataProvider.addMovie(movie)
+		loadMyList() // 데이터 추가된 CoreData 정보를 다시 불러서 업데이트본으로 바로 사용
+	}
+	
+	/// CoreData에서 MyList 데이터 삭제
+	func removeFromMyList(myMovie: MyMovie) {
+		coreDataProvider.deleteMovie(myMovie)
+		loadMyList()
+	}
+	
+	/// 특정 영화가 Mylist에 있는지 확인. id값이 동일하면 true 다르면 false
+	func isInMyList(movieID: Int) -> Bool {
+		return myMovies.contains { $0.id == movieID }
 	}
 }
 

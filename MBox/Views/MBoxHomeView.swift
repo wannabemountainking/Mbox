@@ -15,6 +15,7 @@ struct MBoxHomeView: View {
 	// MARK: - Properties
 	@EnvironmentObject private var vm: MovieViewModel  // ViewModel객체
 	@State private var selectedMovie: Movie? = nil // 선택 영화 데이터
+	@State private var isNavigatingToMyList: Bool = false // My List 화면으로 전환 상태
 	
 	// MARK: - Body
     var body: some View {
@@ -48,6 +49,10 @@ struct MBoxHomeView: View {
 				// 영화 클릭시 상세보기 화면으로 이동
 				MovieDetailView(movie: movie)
 			}
+			.background(
+				NavigationLink("", destination: MyListView(), isActive: $isNavigatingToMyList)
+					.hidden()
+			)
 			
 		}//: NavigationStack
     }//:body
@@ -74,7 +79,7 @@ struct MBoxHomeView: View {
 			// My List로 이동 버튼
 			Button {
 				// TODO: My List View로 전환
-				
+				isNavigatingToMyList = true // MyListView로 전환
 			} label: {
 				Image(systemName: "pencil.and.list.clipboard")
 			}
